@@ -15,7 +15,7 @@ function _readMonitorMode() {
         const Gio = imports.gi.Gio;
         const path = GLib.build_filenamev([
             GLib.get_user_config_dir(), 'cinnamon', 'spices',
-            Me.metadata.uuid, Me.metadata.uuid + '.json'
+            metadata.uuid, metadata.uuid + '.json'
         ]);
         const file = Gio.File.new_for_path(path);
         const [ok, bytes] = file.load_contents(null);
@@ -68,9 +68,13 @@ function _createAll(mode) {
         mode = _readMonitorMode();
     const indices = _monitorIndicesForMode(mode);
     for (const idx of indices) {
-        const c = new DockController(idx, metadata || Me.meta);
-        c.enable();
-        controllers.push(c);
+        try {
+            const c = new DockController(idx, metadata);
+            c.enable();
+            controllers.push(c);
+        } catch (e) {
+            global.logError(e, 'Aura Dock: failed to create dock for monitor ' + idx);
+        }
     }
     global.auraDock = controllers.length ? controllers[0] : null;
 }
