@@ -925,7 +925,8 @@ var DockController = class DockController {
                     // The dock's leave-event can fire spuriously when the
                     // pointer sits on the screen edge, so double-check the
                     // pointer is actually away from the dock (and its reveal
-                    // strip) before hiding.
+                    // strip) before hiding. If it is still nearby, reschedule
+                    // instead of hiding.
                     try {
                         const [px, py] = global.get_pointer();
                         const p = this._geometry;
@@ -943,7 +944,8 @@ var DockController = class DockController {
                                 onDockOrTrigger = true;
                         }
                         if (onDockOrTrigger) {
-                            // Pointer is still on the dock or its reveal strip.
+                            // Pointer still nearby: reschedule the hide check.
+                            this._scheduleHide();
                             return GLib.SOURCE_REMOVE;
                         }
                     } catch (e) {
@@ -986,9 +988,33 @@ var DockController = class DockController {
 
         const shouldHide = this.autohideMode === 'always' || this._windowOverlapsDock();
 
-        if (shouldHide)
+        if (shouldHide) {
+            // Don't hide while the pointer is on the dock or its reveal strip.
+            try {
+                const [px, py] = global.get_pointer();
+                const p = this._geometry;
+                const tr = this._trigger;
+                let onDockOrTrigger = false;
+                if (p) {
+                    if (px >= p.shown.x - 8 && px <= p.shown.x + p.width + 8 &&
+                        py >= p.shown.y - 8 && py <= p.shown.y + p.height + 8)
+                        onDockOrTrigger = true;
+                }
+                if (!onDockOrTrigger && tr) {
+                    const [tx, ty] = tr.get_transformed_position();
+                    if (px >= tx - 4 && px <= tx + tr.width + 4 &&
+                        py >= ty - 4 && py <= ty + tr.height + 4)
+                        onDockOrTrigger = true;
+                }
+                if (onDockOrTrigger) {
+                    this._show(false);
+                    return;
+                }
+            } catch (e) {
+                // Fall through.
+            }
             this._hide(true);
-        else
+        } else
             this._show(true);
     }
 
