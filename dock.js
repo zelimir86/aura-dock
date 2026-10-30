@@ -385,6 +385,7 @@ var DockController = class DockController {
             icon._applyOrientation();
 
         this._sync(true);
+        this._queueReposition();
 
         // Switching the target monitor needs the extension to rebuild its
         // dock instances; do it out of this callback to avoid reentrancy.
