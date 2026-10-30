@@ -766,9 +766,10 @@ var DockController = class DockController {
         const margin = Math.round(this._clamp(this.edgeMargin ?? 0, 0, 48) * this.scale);
         const area = p.area;
 
-        // The trigger covers the gap between the screen edge and the dock too,
-        // so hovering the gap reveals the dock instead of hiding it.
-        const span = thickness + margin;
+        // Cover only the gap between the dock and the screen edge, never the
+        // dock itself (otherwise the trigger would steal hover from the dock).
+        // With no gap, fall back to a thin reveal strip at the screen edge.
+        const span = margin > 0 ? margin : thickness;
 
         let x = 0;
         let y = 0;
@@ -780,20 +781,20 @@ var DockController = class DockController {
                 width = p.width;
                 height = span;
                 x = p.shown.x;
-                y = area.y;
+                y = margin > 0 ? area.y : area.y + margin;
                 break;
 
             case 'left':
                 width = span;
                 height = p.height;
-                x = area.x;
+                x = margin > 0 ? area.x : area.x + margin;
                 y = p.shown.y;
                 break;
 
             case 'right':
                 width = span;
                 height = p.height;
-                x = area.x + area.width - span;
+                x = margin > 0 ? area.x + area.width - span : area.x + area.width - thickness - margin;
                 y = p.shown.y;
                 break;
 
@@ -801,13 +802,17 @@ var DockController = class DockController {
                 width = p.width;
                 height = span;
                 x = p.shown.x;
-                y = area.y + area.height - span;
+                y = margin > 0 ? area.y + area.height - span : area.y + area.height - thickness - margin;
                 break;
         }
 
         this._trigger.set_position(x, y);
         this._trigger.set_size(width, height);
-        this._trigger.visible = !this._suppressed && this.autohideMode !== 'never';
+        if (margin > 0) {
+            this._trigger.visible = !this._suppressed && this.autohideMode !== 'never';
+        } else {
+            this._trigger.visible = this._hidden && !this._suppressed && this.autohideMode !== 'never';
+        }
     }
 
     /* Show and hide *******************************************************/
