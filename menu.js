@@ -278,6 +278,12 @@ var DockMenu = class DockMenu extends DockPopupMenu {
             ['never', 'Never']
         ]);
 
+        this.addChoice('Monitor', 'monitor', () => this.controller.monitorMode, [
+            ['primary', 'Primary monitor'],
+            ['secondary', 'Secondary monitor'],
+            ['all', 'All monitors']
+        ]);
+
         this.addChoice('Click action', 'click-action', () => this.controller.clickAction, [
             ['minimize', 'Minimize / focus'],
             ['cycle', 'Cycle through windows']

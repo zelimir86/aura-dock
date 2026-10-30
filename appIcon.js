@@ -87,12 +87,22 @@ var AppIcon = class AppIcon {
         this._box.set_vertical(!dockVertical);
         this._indicator.set_vertical(dockVertical);
 
+        // The indicator is a thin bar that spans the whole icon, split into
+        // one segment per open window.
+        this._indicator.x_expand = !dockVertical;
+        this._indicator.y_expand = dockVertical;
+
         if (before) {
             this._box.add_child(this._indicator);
             this._box.add_child(this._iconBin);
         } else {
             this._box.add_child(this._iconBin);
             this._box.add_child(this._indicator);
+        }
+
+        for (const child of this._indicator.get_children()) {
+            child.x_expand = !dockVertical;
+            child.y_expand = dockVertical;
         }
 
         this._indicatorKey = null;
@@ -157,20 +167,21 @@ var AppIcon = class AppIcon {
         this._indicator.destroy_all_children();
 
         const scale = this.controller.scale;
-        const dots = Math.min(count, 3);
-        const size = Math.max(3, Math.round(4 * scale));
+        const segments = Math.min(Math.max(count, 0), 4);
+        const gap = Math.max(1, Math.round(2 * scale));
 
-        this._indicator.spacing = Math.max(1, Math.round(2 * scale));
+        this._indicator.spacing = gap;
 
-        for (let i = 0; i < dots; i++) {
+        const dockVertical = this.controller.vertical;
+        for (let i = 0; i < segments; i++) {
             this._indicator.add_child(new St.Widget({
-                style_class: focused ? 'aura-dock-dot focused' : 'aura-dock-dot',
-                width: size,
-                height: size
+                style_class: focused ? 'aura-dock-indicator-segment focused' : 'aura-dock-indicator-segment',
+                x_expand: !dockVertical,
+                y_expand: dockVertical
             }));
         }
 
-        this._indicator.visible = dots > 0;
+        this._indicator.visible = segments > 0;
     }
 
     _updateStyle() {

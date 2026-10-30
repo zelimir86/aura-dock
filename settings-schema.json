@@ -1,4 +1,16 @@
 {
+    "monitor": {
+        "type": "combobox",
+        "default": "primary",
+        "description": "Monitor",
+        "tooltip": "Which monitor the dock is shown on.",
+        "options": {
+            "primary": "Primary monitor",
+            "secondary": "Secondary monitor",
+            "all": "All monitors"
+        },
+        "value": "primary"
+    },
     "dock-position": {
         "type": "combobox",
         "default": "bottom",

@@ -82,6 +82,7 @@ The full schema lives in `settings-schema.json`:
 | `middle-click-action` | `new-window` | `new-window` / `nothing`. |
 | `isolate-workspaces` | `false` | Only show windows from the current workspace. |
 | `show-all-monitors` | `true` | Include windows from other monitors. |
+| `monitor` | `primary` | Which monitor hosts the dock: `primary` / `secondary` / `all`. |
 | `animate-hover` | `true` | Animate icons on hover. |
 | `show-tooltips` | `true` | Show application tooltips. |
 | `edge-margin` | `0` | Gap from the screen edge. |

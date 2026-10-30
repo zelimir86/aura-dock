@@ -33,7 +33,7 @@ const DOCK_WIDTH = 6;
  * autohide, edge positioning and drag reordering possible.
  */
 var DockController = class DockController {
-    constructor(meta) {
+    constructor(monitorIndex, meta) {
         this.meta = meta;
         this.uuid = meta.uuid;
 
@@ -54,14 +54,20 @@ var DockController = class DockController {
         this._suppressed = false;
         this._destroyed = false;
 
-        this._monitorIndex = Main.layoutManager ? Main.layoutManager.primaryIndex : 0;
+        this._monitorIndex = (monitorIndex != null)
+            ? monitorIndex
+            : (Main.layoutManager ? Main.layoutManager.primaryIndex : 0);
         this._geometry = null;
 
         this._tracker = Cinnamon.WindowTracker.get_default();
         this._favorites = AppFavorites.getAppFavorites();
 
         this._settings = new Settings.ExtensionSettings(this, this.uuid);
+        this.monitorMode = 'primary';
+        this._lastMonitorMode = 'primary';
         this._bindSettings();
+        this.monitorMode = this._settings.getValue('monitor') || 'primary';
+        this._lastMonitorMode = this.monitorMode;
     }
 
     /* Accessors ***********************************************************/
@@ -115,7 +121,8 @@ var DockController = class DockController {
             ['animate-hover', 'animateHover'],
             ['show-tooltips', 'showTooltips'],
             ['edge-margin', 'edgeMargin'],
-            ['reveal-size', 'revealSize']
+            ['reveal-size', 'revealSize'],
+            ['monitor', 'monitorMode']
         ];
 
         for (const [key, property] of bindings) {
@@ -327,6 +334,20 @@ var DockController = class DockController {
             icon._applyOrientation();
 
         this._sync(true);
+
+        // Switching the target monitor needs the extension to rebuild its
+        // dock instances; do it out of this callback to avoid reentrancy.
+        const newMonitorMode = this._settings.getValue('monitor');
+        if (newMonitorMode && newMonitorMode !== this._lastMonitorMode) {
+            this._lastMonitorMode = newMonitorMode;
+            this.monitorMode = newMonitorMode;
+            if (global.auraDockManager && global.auraDockManager.recreate) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    try { global.auraDockManager.recreate(newMonitorMode); } catch (e) { global.logError(e); }
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
+        }
     }
 
     /* Signals *************************************************************/
@@ -349,7 +370,8 @@ var DockController = class DockController {
         this.signals.connect(global.workspace_manager, 'notify::n-workspaces', () => this._queueSync());
 
         this.signals.connect(Main.layoutManager, 'monitors-changed', () => {
-            this._monitorIndex = Main.layoutManager.primaryIndex;
+            if (this._monitorIndex >= Main.layoutManager.monitors.length)
+                this._monitorIndex = Main.layoutManager.primaryIndex;
             this._queueSync();
         });
 
