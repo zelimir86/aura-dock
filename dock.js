@@ -71,12 +71,17 @@ var DockController = class DockController {
         this._lastMonitorMode = this.monitorMode;
 
         // Follow the GTK theme's accent colour for the running indicator.
-        this._gnomeSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
+        this._gnomeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.interface' });
         this.accentColor = this._resolveAccentColor();
-        this._gnomeSettings.connect('changed::gtk-theme', () => {
-            this.accentColor = this._resolveAccentColor();
-            for (const icon of this._icons.values())
-                icon._updateIndicator();
+        this._gnomeSettings.connect('changed', () => {
+            const newColor = this._resolveAccentColor();
+            if (newColor !== this.accentColor) {
+                this.accentColor = newColor;
+                for (const icon of this._icons.values()) {
+                    icon._indicatorKey = null;
+                    icon._updateIndicator();
+                }
+            }
         });
     }
 
