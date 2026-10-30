@@ -809,11 +809,7 @@ var DockController = class DockController {
         this._trigger.set_position(x, y);
         this._trigger.set_size(width, height);
         this._trigger.set_opacity(255);
-        if (margin > 0) {
-            this._trigger.visible = !this._suppressed && this.autohideMode !== 'never';
-        } else {
-            this._trigger.visible = this._hidden && !this._suppressed && this.autohideMode !== 'never';
-        }
+        this._trigger.visible = !this._suppressed && this.autohideMode !== 'never';
     }
 
     /* Show and hide *******************************************************/
@@ -924,8 +920,38 @@ var DockController = class DockController {
 
             if (!this._hover && this._menusOpen === 0 && !this._suppressed) {
                 if (this.autohideMode !== 'never' &&
-                    (this.autohideMode === 'always' || this._windowOverlapsDock()))
+                    (this.autohideMode === 'always' || this._windowOverlapsDock())) {
+
+                    // The dock's leave-event can fire spuriously when the
+                    // pointer sits on the screen edge, so double-check the
+                    // pointer is actually away from the dock (and its reveal
+                    // strip) before hiding.
+                    try {
+                        const [px, py] = global.get_pointer();
+                        const p = this._geometry;
+                        const tr = this._trigger;
+                        let onDockOrTrigger = false;
+                        if (p) {
+                            if (px >= p.shown.x - 8 && px <= p.shown.x + p.width + 8 &&
+                                py >= p.shown.y - 8 && py <= p.shown.y + p.height + 8)
+                                onDockOrTrigger = true;
+                        }
+                        if (!onDockOrTrigger && tr) {
+                            const [tx, ty] = tr.get_transformed_position();
+                            if (px >= tx - 4 && px <= tx + tr.width + 4 &&
+                                py >= ty - 4 && py <= ty + tr.height + 4)
+                                onDockOrTrigger = true;
+                        }
+                        if (onDockOrTrigger) {
+                            // Pointer is still on the dock or its reveal strip.
+                            return GLib.SOURCE_REMOVE;
+                        }
+                    } catch (e) {
+                        // Fall through to hiding.
+                    }
+
                     this._hide();
+                }
             }
 
             return GLib.SOURCE_REMOVE;
