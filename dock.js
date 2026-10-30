@@ -578,6 +578,8 @@ var DockController = class DockController {
             ids.push(win.connect('notify::appears-focused', () => this._queueSync()));
             ids.push(win.connect('notify::workspace', () => this._queueSync()));
             ids.push(win.connect('unmanaged', () => this._queueSync()));
+            ids.push(win.connect('size-changed', () => this._queueAutohideCheck()));
+            ids.push(win.connect('position-changed', () => this._queueAutohideCheck()));
 
             this._windowSignals.set(win, ids);
         }
