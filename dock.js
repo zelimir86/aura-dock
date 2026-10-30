@@ -755,7 +755,7 @@ var DockController = class DockController {
 
         this._positionTrigger(p);
         if (this._trigger)
-            this._trigger.set_opacity(this._hidden ? 255 : 0);
+            this._trigger.set_style(this._hidden ? '' : 'background-color: transparent;');
     }
 
     _positionTrigger(p) {
@@ -808,6 +808,7 @@ var DockController = class DockController {
 
         this._trigger.set_position(x, y);
         this._trigger.set_size(width, height);
+        this._trigger.set_opacity(255);
         if (margin > 0) {
             this._trigger.visible = !this._suppressed && this.autohideMode !== 'never';
         } else {
@@ -826,7 +827,7 @@ var DockController = class DockController {
         // Keep the trigger in place as an invisible hover zone covering the
         // gap, so the dock does not hide while the pointer is in the gap.
         if (this._trigger) {
-            this._trigger.set_opacity(0);
+            this._trigger.set_style('background-color: transparent;');
             this._trigger.show();
         }
 
@@ -864,7 +865,7 @@ var DockController = class DockController {
 
         this._positionTrigger(geometry);
         if (this._trigger)
-            this._trigger.set_opacity(0);
+            this._trigger.set_style('background-color: transparent;');
         this._nudgeChrome();
     }
 
@@ -877,7 +878,7 @@ var DockController = class DockController {
         if (this._hidden && !this._dock.visible) {
             this._positionTrigger(this._positions());
             if (this._trigger)
-                this._trigger.set_opacity(255);
+                this._trigger.set_style('');
             return;
         }
 
@@ -893,7 +894,7 @@ var DockController = class DockController {
             this._dock.set_opacity(255);
             this._positionTrigger(p);
             if (this._trigger)
-                this._trigger.set_opacity(255);
+                this._trigger.set_style('');
             this._nudgeChrome();
         };
 
