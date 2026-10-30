@@ -8,6 +8,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 
 const AppFavorites = imports.ui.appFavorites;
+const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
@@ -54,6 +55,7 @@ var DockController = class DockController {
         this._hidden = true;
         this._suppressed = false;
         this._destroyed = false;
+        this._dragHover = false;
         this._shiftRightPressed = false;
 
         this._monitorIndex = (monitorIndex != null)
@@ -1147,6 +1149,44 @@ var DockController = class DockController {
         index = index === -1 ? 0 : (index + delta + windows.length) % windows.length;
 
         this.activateWindow(windows[index]);
+    }
+
+    /* Drag and drop (external sources, e.g. the start menu) *****************/
+
+    handleDragOver(source, dragActor, x, y, time) {
+        if (source instanceof AppIcon)
+            return DND.DragMotionResult.CONTINUE;
+
+        if (source && source.isDraggableApp && source.app) {
+            if (!this._dragHover) {
+                this._dragHover = true;
+                this._dock.add_style_pseudo_class('drop');
+            }
+            return DND.DragMotionResult.COPY_DROP;
+        }
+
+        return DND.DragMotionResult.CONTINUE;
+    }
+
+    handleDragOut() {
+        if (!this._dragHover)
+            return;
+        this._dragHover = false;
+        this._dock.remove_style_pseudo_class('drop');
+    }
+
+    acceptDrop(source, dragActor, x, y, time) {
+        this.handleDragOut();
+
+        if (source && source.isDraggableApp && source.app) {
+            const id = source.app.get_id();
+            const favorites = AppFavorites.getAppFavorites();
+            if (id && !favorites.isFavorite(id))
+                favorites.addFavorite(id);
+            return true;
+        }
+
+        return false;
     }
 
     reorderFavorites(sourceId, targetId) {

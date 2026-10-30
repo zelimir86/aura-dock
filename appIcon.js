@@ -358,7 +358,17 @@ var AppIcon = class AppIcon {
     }
 
     handleDragOver(source, dragActor, x, y, time) {
-        if (!(source instanceof AppIcon) || source === this)
+        // Accept applications dragged in from the Cinnamon menu (or any other
+        // draggable application source) so they can be pinned to the dock.
+        if (!(source instanceof AppIcon)) {
+            if (source && source.isDraggableApp && source.app) {
+                this._dragHover = true;
+                this.actor.add_style_pseudo_class('drop');
+                return DND.DragMotionResult.COPY_DROP;
+            }
+            return DND.DragMotionResult.CONTINUE;
+        }
+        if (source === this)
             return DND.DragMotionResult.CONTINUE;
         if (source.controller !== this.controller || !source.isFavorite)
             return DND.DragMotionResult.CONTINUE;
@@ -381,7 +391,32 @@ var AppIcon = class AppIcon {
     acceptDrop(source, dragActor, x, y, time) {
         this.handleDragOut();
 
-        if (!(source instanceof AppIcon) || source === this)
+        // Pin an application dragged in from outside the dock.
+        if (!(source instanceof AppIcon)) {
+            if (source && source.isDraggableApp && source.app) {
+                const id = source.app.get_id();
+                const favorites = AppFavorites.getAppFavorites();
+                if (id && !favorites.isFavorite(id)) {
+                    let pos = -1;
+                    if (this.isFavorite) {
+                        const favs = favorites.getFavorites();
+                        pos = favs.indexOf(this.id);
+                        if (pos < 0)
+                            pos = -1;
+                    }
+                    favorites.addFavoriteAtPos(id, pos);
+                } else if (id && favorites.isFavorite(id) && this.isFavorite) {
+                    const favs = favorites.getFavorites();
+                    const pos = favs.indexOf(this.id);
+                    if (pos >= 0)
+                        favorites.moveFavoriteToPos(id, pos);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        if (source === this)
             return false;
 
         this.controller.reorderFavorites(source.id, this.id);
