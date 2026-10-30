@@ -191,6 +191,10 @@ var DockController = class DockController {
         this._buildTrigger();
 
         this._menuManager = new PopupMenu.PopupMenuManager({ actor: this._dock });
+        // Prevent the menu manager from switching to the dock's settings menu
+        // just because the pointer entered the dock while an application menu
+        // was open (which previously opened the settings menu unexpectedly).
+        this._menuManager._onMenuSourceEnter = function(menu) { return false; };
         this._dockMenu = MenuFactory.createDockMenu(this);
         this._menuManager.addMenu(this._dockMenu);
 
@@ -1075,9 +1079,6 @@ var DockController = class DockController {
         if (event.get_button() !== 3)
             return Clutter.EVENT_PROPAGATE;
 
-        // Only open the settings menu on a genuine Shift + right click. The
-        // Shift state is tracked on button-press so a stale modifier bit in
-        // the release event cannot trigger it accidentally.
         if (this._shiftRightPressed) {
             this._shiftRightPressed = false;
             if (this._menusOpen === 0 || this._dockMenu.isOpen) {
