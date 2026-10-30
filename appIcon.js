@@ -364,6 +364,7 @@ var AppIcon = class AppIcon {
             if (source && source.isDraggableApp && source.app) {
                 this._dragHover = true;
                 this.actor.add_style_pseudo_class('drop');
+                this.controller._showDragPlaceholder();
                 return DND.DragMotionResult.COPY_DROP;
             }
             return DND.DragMotionResult.CONTINUE;
@@ -411,6 +412,7 @@ var AppIcon = class AppIcon {
                     if (pos >= 0)
                         favorites.moveFavoriteToPos(id, pos);
                 }
+                this.controller._hideDragPlaceholder();
                 return true;
             }
             return false;

@@ -56,6 +56,8 @@ var DockController = class DockController {
         this._suppressed = false;
         this._destroyed = false;
         this._dragHover = false;
+        this._dragPlaceholder = null;
+        this._dragPlaceholderTimeout = 0;
         this._shiftRightPressed = false;
 
         this._monitorIndex = (monitorIndex != null)
@@ -255,6 +257,8 @@ var DockController = class DockController {
         for (const icon of Array.from(this._icons.values()))
             icon.destroy();
         this._icons.clear();
+
+        this._hideDragPlaceholder();
 
         if (this._dockMenu && this._menuManager) {
             try {
@@ -508,6 +512,8 @@ var DockController = class DockController {
     _sync() {
         if (this._destroyed)
             return;
+
+        this._hideDragPlaceholder();
 
         if (this._syncId) {
             Mainloop.source_remove(this._syncId);
@@ -1162,6 +1168,7 @@ var DockController = class DockController {
                 this._dragHover = true;
                 this._dock.add_style_pseudo_class('drop');
             }
+            this._showDragPlaceholder();
             return DND.DragMotionResult.COPY_DROP;
         }
 
@@ -1173,6 +1180,7 @@ var DockController = class DockController {
             return;
         this._dragHover = false;
         this._dock.remove_style_pseudo_class('drop');
+        this._hideDragPlaceholder();
     }
 
     acceptDrop(source, dragActor, x, y, time) {
@@ -1183,10 +1191,52 @@ var DockController = class DockController {
             const favorites = AppFavorites.getAppFavorites();
             if (id && !favorites.isFavorite(id))
                 favorites.addFavorite(id);
+            this._hideDragPlaceholder();
             return true;
         }
 
         return false;
+    }
+
+    _showDragPlaceholder() {
+        if (this._dragPlaceholder)
+            return;
+
+        const size = Math.round((this.iconSize || 48) * this.scale);
+        const placeholder = new St.BoxLayout({
+            style_class: 'aura-dock-drop-placeholder',
+            width: size + 12,
+            height: size + 12
+        });
+        const icon = new St.Icon({
+            icon_name: 'list-add-symbolic',
+            icon_size: Math.round(20 * this.scale)
+        });
+        placeholder.add_child(icon);
+        placeholder.x_align = St.Align.MIDDLE;
+        placeholder.y_align = St.Align.MIDDLE;
+
+        this._dock.add_child(placeholder);
+        this._dragPlaceholder = placeholder;
+
+        // Safety net: hide the placeholder if a drag is cancelled without a
+        // drop while the pointer stays over the dock.
+        this._dragPlaceholderTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10000, () => {
+            this._dragPlaceholderTimeout = 0;
+            this._hideDragPlaceholder();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _hideDragPlaceholder() {
+        if (this._dragPlaceholderTimeout) {
+            GLib.source_remove(this._dragPlaceholderTimeout);
+            this._dragPlaceholderTimeout = 0;
+        }
+        if (!this._dragPlaceholder)
+            return;
+        try { this._dragPlaceholder.destroy(); } catch (e) {}
+        this._dragPlaceholder = null;
     }
 
     reorderFavorites(sourceId, targetId) {
