@@ -1074,7 +1074,7 @@ var DockController = class DockController {
             return Clutter.EVENT_STOP;
         }
 
-        return Clutter.EVENT_PROPAGATE;
+        return Clutter.EVENT_STOP;
     }
 
     _onDockScroll(actor, event) {
