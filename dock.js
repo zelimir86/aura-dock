@@ -1067,10 +1067,7 @@ var DockController = class DockController {
     /* Interaction *********************************************************/
 
     _onDockButtonPress(actor, event) {
-        if (event.get_button() === 3 && (event.get_state() & Clutter.ModifierType.SHIFT_MASK))
-            this._shiftRightPressed = true;
-        else
-            this._shiftRightPressed = false;
+        // No-op: settings are opened with Shift + right click on an icon.
         return Clutter.EVENT_PROPAGATE;
     }
 
@@ -1078,13 +1075,15 @@ var DockController = class DockController {
         if (event.get_button() !== 3)
             return Clutter.EVENT_PROPAGATE;
 
-        // Only open the settings menu on a genuine Shift + right click. Track
-        // the Shift state on button-press so a stale modifier bit in the
-        // release event cannot trigger it accidentally.
+        // Only open the settings menu on a genuine Shift + right click. The
+        // Shift state is tracked on button-press so a stale modifier bit in
+        // the release event cannot trigger it accidentally.
         if (this._shiftRightPressed) {
             this._shiftRightPressed = false;
-            this._dockMenu.toggle();
-            return Clutter.EVENT_STOP;
+            if (this._menusOpen === 0 || this._dockMenu.isOpen) {
+                this._dockMenu.toggle();
+                return Clutter.EVENT_STOP;
+            }
         }
 
         this._shiftRightPressed = false;
