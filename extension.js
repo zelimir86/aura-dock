@@ -8,6 +8,7 @@ const Me = Extension.getCurrentExtension();
 
 let metadata = null;
 let controllers = [];
+let _monitorsChangedId = 0;
 
 function _readMonitorMode() {
     try {
@@ -74,6 +75,24 @@ function _createAll(mode) {
     global.auraDock = controllers.length ? controllers[0] : null;
 }
 
+let _recreateScheduled = false;
+
+function _scheduleRecreate() {
+    if (_recreateScheduled)
+        return;
+    _recreateScheduled = true;
+    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        _recreateScheduled = false;
+        try {
+            _destroyAll();
+            _createAll();
+        } catch (e) {
+            global.logError(e, 'Aura Dock: recreate failed');
+        }
+        return GLib.SOURCE_REMOVE;
+    });
+}
+
 function init(meta) {
     metadata = meta;
 }
@@ -81,9 +100,19 @@ function init(meta) {
 function enable() {
     _createAll();
     global.auraDockManager = { recreate: (mode) => { _destroyAll(); _createAll(mode); } };
+
+    if (Main.layoutManager) {
+        _monitorsChangedId = Main.layoutManager.connect('monitors-changed', () => {
+            _scheduleRecreate();
+        });
+    }
 }
 
 function disable() {
+    if (_monitorsChangedId && Main.layoutManager) {
+        try { Main.layoutManager.disconnect(_monitorsChangedId); } catch (e) { /* ignore */ }
+        _monitorsChangedId = 0;
+    }
     _destroyAll();
     if (global.auraDockManager) delete global.auraDockManager;
 }
