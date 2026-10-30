@@ -37,14 +37,12 @@
 }
 
 .aura-dock-indicator-segment {
-    background-color: rgba(255, 255, 255, 0.42);
     border-radius: 2px;
     min-width: 3px;
     min-height: 3px;
 }
 
 .aura-dock-indicator-segment.focused {
-    background-color: #ffffff;
 }
 
 /* Thin strip on the screen edge that reveals a hidden dock. */

@@ -173,12 +173,16 @@ var AppIcon = class AppIcon {
         this._indicator.spacing = gap;
 
         const dockVertical = this.controller.vertical;
+        const accent = this.controller.accentColor || '#92b372';
         for (let i = 0; i < segments; i++) {
-            this._indicator.add_child(new St.Widget({
+            const seg = new St.Widget({
                 style_class: focused ? 'aura-dock-indicator-segment focused' : 'aura-dock-indicator-segment',
                 x_expand: !dockVertical,
                 y_expand: dockVertical
-            }));
+            });
+            seg.set_style('background-color: ' + accent + ';');
+            seg.opacity = focused ? 255 : 140;
+            this._indicator.add_child(seg);
         }
 
         this._indicator.visible = segments > 0;

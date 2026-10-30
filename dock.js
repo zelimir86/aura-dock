@@ -3,6 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 
@@ -68,6 +69,15 @@ var DockController = class DockController {
         this._bindSettings();
         this.monitorMode = this._settings.getValue('monitor') || 'primary';
         this._lastMonitorMode = this.monitorMode;
+
+        // Follow the GTK theme's accent colour for the running indicator.
+        this._gnomeSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
+        this.accentColor = this._resolveAccentColor();
+        this._gnomeSettings.connect('changed::gtk-theme', () => {
+            this.accentColor = this._resolveAccentColor();
+            for (const icon of this._icons.values())
+                icon._updateIndicator();
+        });
     }
 
     /* Accessors ***********************************************************/
@@ -132,6 +142,42 @@ var DockController = class DockController {
                 global.logError(e, `Aura Dock: could not bind setting ${key}`);
             }
         }
+    }
+
+    _resolveDefineColor(text, name) {
+        const re = new RegExp('@define-color\\s+' + name + '\\s+([^;]+);');
+        const m = text.match(re);
+        if (!m)
+            return null;
+        const value = m[1].trim();
+        if (value.startsWith('@'))
+            return this._resolveDefineColor(text, value.slice(1));
+        return value;
+    }
+
+    _resolveAccentColor() {
+        try {
+            const theme = this._gnomeSettings.get_string('gtk-theme') || 'Mint-L';
+            const candidates = [theme, theme.replace(/-Dark$/, ''), 'Mint-L'];
+            for (const candidate of candidates) {
+                const path = GLib.build_filenamev(['/usr/share/themes', candidate, 'gtk-3.0', 'gtk.css']);
+                const file = Gio.File.new_for_path(path);
+                const [ok, bytes] = file.load_contents(null);
+                if (!ok)
+                    continue;
+                const text = imports.byteArray.toString(bytes);
+                let color = this._resolveDefineColor(text, 'theme_selected_bg_color');
+                if (!color)
+                    color = this._resolveDefineColor(text, 'accent_bg_color');
+                if (!color)
+                    color = this._resolveDefineColor(text, 'accent_color');
+                if (color && !color.startsWith('@'))
+                    return color;
+            }
+        } catch (e) {
+            global.logError(e, 'Aura Dock: could not resolve accent colour');
+        }
+        return '#92b372';
     }
 
     enable() {
