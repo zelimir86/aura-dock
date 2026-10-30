@@ -1,0 +1,111 @@
+{
+    "dock-position": {
+        "type": "combobox",
+        "default": "bottom",
+        "description": "Dock position",
+        "tooltip": "Screen edge the dock is attached to.",
+        "options": {
+            "bottom": "Bottom",
+            "top": "Top",
+            "left": "Left",
+            "right": "Right"
+        }
+    },
+    "icon-size": {
+        "type": "spinbutton",
+        "default": 48,
+        "min": 24,
+        "max": 96,
+        "step": 2,
+        "description": "Icon size",
+        "tooltip": "Size of the application icons in pixels."
+    },
+    "autohide-mode": {
+        "type": "combobox",
+        "default": "intelligent",
+        "description": "Autohide",
+        "tooltip": "Intelligent hides the dock only when a window overlaps it, Always always hides it, Never keeps it on screen.",
+        "options": {
+            "intelligent": "Intelligent",
+            "always": "Always",
+            "never": "Never"
+        }
+    },
+    "autohide-delay": {
+        "type": "spinbutton",
+        "default": 350,
+        "min": 0,
+        "max": 3000,
+        "step": 50,
+        "description": "Hide delay (ms)",
+        "tooltip": "How long the pointer has to leave the dock before it hides."
+    },
+    "background-opacity": {
+        "type": "scale",
+        "default": 85,
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "description": "Background opacity (%)",
+        "tooltip": "Opacity of the dock background. The border radius and padding come from stylesheet.css."
+    },
+    "click-action": {
+        "type": "combobox",
+        "default": "minimize",
+        "description": "Click action",
+        "tooltip": "What a left click does on an application that already has windows.",
+        "options": {
+            "minimize": "Minimize / focus",
+            "cycle": "Cycle through windows"
+        }
+    },
+    "middle-click-action": {
+        "type": "combobox",
+        "default": "new-window",
+        "description": "Middle click action",
+        "options": {
+            "new-window": "Open a new window",
+            "nothing": "Nothing"
+        }
+    },
+    "isolate-workspaces": {
+        "type": "checkbox",
+        "default": false,
+        "description": "Show only windows from the current workspace",
+        "tooltip": "When off, the dock also shows and focuses windows from other workspaces."
+    },
+    "show-all-monitors": {
+        "type": "checkbox",
+        "default": true,
+        "description": "Show windows from all monitors",
+        "tooltip": "When off, only windows on the monitor that hosts the dock are listed."
+    },
+    "animate-hover": {
+        "type": "checkbox",
+        "default": true,
+        "description": "Animate icons on hover"
+    },
+    "show-tooltips": {
+        "type": "checkbox",
+        "default": true,
+        "description": "Show application tooltips"
+    },
+    "edge-margin": {
+        "type": "spinbutton",
+        "default": 0,
+        "min": 0,
+        "max": 48,
+        "step": 2,
+        "description": "Gap from the screen edge",
+        "tooltip": "Distance between the dock and the edge it is attached to."
+    },
+    "reveal-size": {
+        "type": "spinbutton",
+        "default": 4,
+        "min": 2,
+        "max": 24,
+        "step": 1,
+        "description": "Autohide trigger thickness",
+        "tooltip": "Thickness of the invisible strip at the screen edge that brings the dock back."
+    }
+}
