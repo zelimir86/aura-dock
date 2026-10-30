@@ -1064,13 +1064,12 @@ var DockController = class DockController {
     /* Interaction *********************************************************/
 
     _onDockButtonRelease(actor, event) {
-        // Only handle right clicks on the dock's own background, not on the
-        // icons (those have their own menus). Otherwise both menus open and
-        // Cinnamon can crash.
-        if (event.get_source() !== this._dock)
+        if (event.get_button() !== 3)
             return Clutter.EVENT_PROPAGATE;
 
-        if (event.get_button() === 3) {
+        // Right click on the dock background does nothing by itself; the
+        // settings menu is opened with Shift + right click anywhere.
+        if (event.get_state() & Clutter.ModifierType.SHIFT_MASK) {
             this._dockMenu.toggle();
             return Clutter.EVENT_STOP;
         }

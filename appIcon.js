@@ -263,7 +263,13 @@ var AppIcon = class AppIcon {
         }
 
         if (button === 3) {
-            this._ensureMenu().toggle();
+            // Shift + right click opens the dock settings menu (works anywhere,
+            // including on top of an application icon).
+            if (event.get_state() & Clutter.ModifierType.SHIFT_MASK) {
+                this.controller._dockMenu.toggle();
+            } else {
+                this._ensureMenu().toggle();
+            }
             return Clutter.EVENT_STOP;
         }
 
