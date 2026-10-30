@@ -754,6 +754,8 @@ var DockController = class DockController {
             this._dock.set_position(p.shown.x, p.shown.y);
 
         this._positionTrigger(p);
+        if (this._trigger)
+            this._trigger.set_opacity(this._hidden ? 255 : 0);
     }
 
     _positionTrigger(p) {
@@ -764,6 +766,10 @@ var DockController = class DockController {
         const margin = Math.round(this._clamp(this.edgeMargin ?? 0, 0, 48) * this.scale);
         const area = p.area;
 
+        // The trigger covers the gap between the screen edge and the dock too,
+        // so hovering the gap reveals the dock instead of hiding it.
+        const span = thickness + margin;
+
         let x = 0;
         let y = 0;
         let width = 0;
@@ -772,36 +778,36 @@ var DockController = class DockController {
         switch (this.position) {
             case 'top':
                 width = p.width;
-                height = thickness;
+                height = span;
                 x = p.shown.x;
-                y = area.y + margin;
+                y = area.y;
                 break;
 
             case 'left':
-                width = thickness;
+                width = span;
                 height = p.height;
-                x = area.x + margin;
+                x = area.x;
                 y = p.shown.y;
                 break;
 
             case 'right':
-                width = thickness;
+                width = span;
                 height = p.height;
-                x = area.x + area.width - thickness - margin;
+                x = area.x + area.width - span;
                 y = p.shown.y;
                 break;
 
             default:
                 width = p.width;
-                height = thickness;
+                height = span;
                 x = p.shown.x;
-                y = area.y + area.height - thickness - margin;
+                y = area.y + area.height - span;
                 break;
         }
 
         this._trigger.set_position(x, y);
         this._trigger.set_size(width, height);
-        this._trigger.visible = this._hidden && !this._suppressed && this.autohideMode !== 'never';
+        this._trigger.visible = !this._suppressed && this.autohideMode !== 'never';
     }
 
     /* Show and hide *******************************************************/
@@ -812,8 +818,12 @@ var DockController = class DockController {
 
         this._cancelHide();
 
-        if (this._trigger)
-            this._trigger.hide();
+        // Keep the trigger in place as an invisible hover zone covering the
+        // gap, so the dock does not hide while the pointer is in the gap.
+        if (this._trigger) {
+            this._trigger.set_opacity(0);
+            this._trigger.show();
+        }
 
         if (!this._hidden && this._dock.visible)
             return;
@@ -848,6 +858,8 @@ var DockController = class DockController {
         }
 
         this._positionTrigger(geometry);
+        if (this._trigger)
+            this._trigger.set_opacity(0);
         this._nudgeChrome();
     }
 
@@ -859,6 +871,8 @@ var DockController = class DockController {
 
         if (this._hidden && !this._dock.visible) {
             this._positionTrigger(this._positions());
+            if (this._trigger)
+                this._trigger.set_opacity(255);
             return;
         }
 
@@ -873,6 +887,8 @@ var DockController = class DockController {
             this._dock.hide();
             this._dock.set_opacity(255);
             this._positionTrigger(p);
+            if (this._trigger)
+                this._trigger.set_opacity(255);
             this._nudgeChrome();
         };
 
