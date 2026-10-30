@@ -54,6 +54,7 @@ var DockController = class DockController {
         this._hidden = true;
         this._suppressed = false;
         this._destroyed = false;
+        this._shiftRightPressed = false;
 
         this._monitorIndex = (monitorIndex != null)
             ? monitorIndex
@@ -313,6 +314,7 @@ var DockController = class DockController {
         });
 
         this._dock.connect('enter-event', () => {
+            global.log('Aura Dock: dock enter');
             this._hover = true;
             this._cancelHide();
             this._show(true);
@@ -326,6 +328,7 @@ var DockController = class DockController {
         });
 
         this._dock.connect('button-release-event', (actor, event) => this._onDockButtonRelease(actor, event));
+        this._dock.connect('button-press-event', (actor, event) => this._onDockButtonPress(actor, event));
         this._dock.connect('scroll-event', (actor, event) => this._onDockScroll(actor, event));
 
         // Icon textures load asynchronously, so the dock's natural size is
@@ -1063,17 +1066,28 @@ var DockController = class DockController {
 
     /* Interaction *********************************************************/
 
+    _onDockButtonPress(actor, event) {
+        if (event.get_button() === 3 && (event.get_state() & Clutter.ModifierType.SHIFT_MASK))
+            this._shiftRightPressed = true;
+        else
+            this._shiftRightPressed = false;
+        return Clutter.EVENT_PROPAGATE;
+    }
+
     _onDockButtonRelease(actor, event) {
         if (event.get_button() !== 3)
             return Clutter.EVENT_PROPAGATE;
 
-        // Right click on the dock background does nothing by itself; the
-        // settings menu is opened with Shift + right click anywhere.
-        if (event.get_state() & Clutter.ModifierType.SHIFT_MASK) {
+        // Only open the settings menu on a genuine Shift + right click. Track
+        // the Shift state on button-press so a stale modifier bit in the
+        // release event cannot trigger it accidentally.
+        if (this._shiftRightPressed) {
+            this._shiftRightPressed = false;
             this._dockMenu.toggle();
             return Clutter.EVENT_STOP;
         }
 
+        this._shiftRightPressed = false;
         return Clutter.EVENT_STOP;
     }
 
