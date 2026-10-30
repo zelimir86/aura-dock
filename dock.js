@@ -193,6 +193,14 @@ var DockController = class DockController {
         this._dockMenu = MenuFactory.createDockMenu(this);
         this._menuManager.addMenu(this._dockMenu);
 
+        this._dockMenu.connect('open-state-changed', (menu, open) => {
+            if (open)
+                this._menusOpen++;
+            else
+                this._menusOpen = Math.max(0, this._menusOpen - 1);
+            this._queueAutohideCheck();
+        });
+
         this._connectSignals();
         this._applyDockStyle();
         this._sync(true);
@@ -1056,6 +1064,12 @@ var DockController = class DockController {
     /* Interaction *********************************************************/
 
     _onDockButtonRelease(actor, event) {
+        // Only handle right clicks on the dock's own background, not on the
+        // icons (those have their own menus). Otherwise both menus open and
+        // Cinnamon can crash.
+        if (event.get_source() !== this._dock)
+            return Clutter.EVENT_PROPAGATE;
+
         if (event.get_button() === 3) {
             this._dockMenu.toggle();
             return Clutter.EVENT_STOP;

@@ -325,6 +325,14 @@ var AppIcon = class AppIcon {
         if (!this._menu) {
             this._menu = MenuFactory.createAppMenu(this);
             this.controller.menuManager.addMenu(this._menu);
+
+            this._menu.connect('open-state-changed', (menu, open) => {
+                if (open)
+                    this.controller._menusOpen++;
+                else
+                    this.controller._menusOpen = Math.max(0, this.controller._menusOpen - 1);
+                this.controller._queueAutohideCheck();
+            });
         }
         return this._menu;
     }
