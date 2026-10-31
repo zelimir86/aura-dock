@@ -64,9 +64,10 @@
 }
 
 .aura-dock-close {
-    border-radius: 8px;
+    border-radius: 99px;
     padding: 6px;
     background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .aura-dock-close:hover {
