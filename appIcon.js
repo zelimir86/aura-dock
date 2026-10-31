@@ -213,8 +213,10 @@ var AppIcon = class AppIcon {
         const name = this.app.get_name();
         if (!this._tooltip) {
             this._tooltip = new Tooltips.Tooltip(this.actor, name);
-            // Override show() to anchor the tooltip to the icon instead of the
-            // mouse cursor, so it never runs off the screen edge.
+            // Reduce the theme's oversized padding and anchor the tooltip to
+            // the icon instead of the mouse cursor, so it never runs off the
+            // screen edge.
+            this._tooltip._tooltip.set_style('padding: 4px 8px;');
             const tooltip = this._tooltip;
             const icon = this.actor;
             const controller = this.controller;
@@ -222,13 +224,11 @@ var AppIcon = class AppIcon {
                 if (tooltip._tooltip.get_text() == "" || !tooltip.mousePosition)
                     return;
 
+                tooltip._tooltip.set_size(-1, -1);
                 tooltip._tooltip.show();
                 let [minW, minH, prefW, prefH] = tooltip._tooltip.get_preferred_size();
-                let tooltipWidth = prefW;
-                let tooltipHeight = prefH;
-                if (tooltipWidth <= 0) tooltipWidth = tooltip._tooltip.width || 100;
-                if (tooltipHeight <= 0) tooltipHeight = tooltip._tooltip.height || 20;
-                tooltip._tooltip.set_size(tooltipWidth, tooltipHeight);
+                let tooltipWidth = prefW > 0 ? prefW : (tooltip._tooltip.width || 100);
+                let tooltipHeight = prefH > 0 ? prefH : (tooltip._tooltip.height || 20);
 
                 let monitor = Main.layoutManager.findMonitorForActor(icon);
                 let iconPos = icon.get_transformed_position();
