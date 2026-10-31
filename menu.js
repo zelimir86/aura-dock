@@ -186,42 +186,21 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                 item.setSensitive(true);
                 item.actor._targetWindow = targetWindow;
 
-                // Show a live thumbnail of the window when possible.
-                let thumbAdded = false;
                 try {
                     const clones = WindowUtils.createWindowClone(targetWindow, 160, 120, false, false);
                     if (clones && clones.length) {
-                        thumbAdded = true;
                         const clone = clones[0].actor;
                         clone.reactive = false;
 
-                        // Use BinLayout so the close button can overlay the
-                        // thumbnail's top-right corner.
-                        const thumbContainer = new St.Widget({
-                            style_class: 'aura-dock-thumb-container',
+                        const thumbBin = new St.Bin({
+                            style_class: 'aura-dock-thumb',
                             width: 149,
-                            height: 120,
-                            layout_manager: new Clutter.BinLayout()
+                            height: 120
                         });
-                        thumbContainer._targetWindow = targetWindow;
-                        thumbContainer.add_child(clone);
-
-                        const closeBtn = new St.Button({
-                            style_class: 'aura-dock-close',
-                            child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 12 }),
-                            reactive: true,
-                            x_align: Clutter.ActorAlign.END,
-                            y_align: Clutter.ActorAlign.START
-                        });
-                        closeBtn._targetWindow = targetWindow;
-                        closeBtn.connect('clicked', () => {
-                            targetWindow.delete(global.get_current_time());
-                            this.close();
-                        });
-                        thumbContainer.add_child(closeBtn);
-
-                        thumbContainer.reactive = true;
-                        thumbContainer.connect('button-release-event', (a, e) => {
+                        thumbBin.set_child(clone);
+                        thumbBin.reactive = true;
+                        thumbBin._targetWindow = targetWindow;
+                        thumbBin.connect('button-release-event', (a, e) => {
                             if (e.get_button() === 1) {
                                 const w = a._targetWindow;
                                 global._lastActivated = w ? w.get_title() : 'NO TARGET';
@@ -234,23 +213,9 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                             }
                             return Clutter.EVENT_PROPAGATE;
                         });
-                        item.addActor(thumbContainer, { span: 0, position: 0 });
+                        item.addActor(thumbBin, { span: 0, position: 0 });
                     }
                 } catch (e) {
-                    // Window not yet composited (e.g. just created); skip thumbnail.
-                }
-
-                if (!thumbAdded) {
-                    const close = new St.Button({
-                        style_class: 'aura-dock-close',
-                        child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 14 }),
-                        reactive: true
-                    });
-                    close.connect('clicked', () => {
-                        targetWindow.delete(global.get_current_time());
-                        this.close();
-                    });
-                    item.addActor(close, { span: 0 });
                 }
 
                 item.actor.connect('button-release-event', (actor, e) => {
@@ -267,8 +232,18 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     return Clutter.EVENT_PROPAGATE;
                 });
 
-                // Fallback close button (only when no thumbnail was added).
-                // ... placeholder, will be handled below
+                const close = new St.Button({
+                    style_class: 'aura-dock-close',
+                    child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 16 }),
+                    reactive: true
+                });
+                close.set_size(28, 28);
+                close.connect('clicked', () => {
+                    targetWindow.delete(global.get_current_time());
+                    this.close();
+                });
+                item.addActor(close, { span: 0 });
+
                 this.addMenuItem(item);
             });
         }
