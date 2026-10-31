@@ -234,10 +234,10 @@ var AppMenu = class AppMenu extends DockPopupMenu {
 
                 const close = new St.Button({
                     style_class: 'aura-dock-close',
-                    child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 16 }),
+                    child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 18 }),
                     reactive: true
                 });
-                close.set_size(28, 28);
+                close.set_size(34, 34);
                 close.connect('clicked', () => {
                     targetWindow.delete(global.get_current_time());
                     this.close();
