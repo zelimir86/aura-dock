@@ -190,24 +190,17 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     if (clones && clones.length) {
                         const clone = clones[0].actor;
                         clone._targetWindow = targetWindow;
-                        clone.reactive = true;
+                        clone.reactive = false;
                         clone.set_style_class_name('aura-dock-thumb');
-                        clone.connect('button-release-event', (a, e) => {
-                            if (e.get_button() === 1) {
-                                icon.controller.activateWindow(a._targetWindow);
-                                this.close();
-                                return Clutter.EVENT_STOP;
-                            }
-                            return Clutter.EVENT_PROPAGATE;
-                        });
                         item.addActor(clone, { span: 0, position: 0 });
                     }
                 } catch (e) {
                     // Window not yet composited (e.g. just created); skip thumbnail.
                 }
 
-                item.connect('activate', () => {
-                    icon.controller.activateWindow(item._targetWindow);
+                item.connect('activate', (activatedItem) => {
+                    const win = (activatedItem && activatedItem._targetWindow) || targetWindow;
+                    icon.controller.activateWindow(win);
                     this.close();
                 });
 
