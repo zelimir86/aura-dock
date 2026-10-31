@@ -178,12 +178,13 @@ var AppMenu = class AppMenu extends DockPopupMenu {
         if (windows.length) {
             addSeparator(this);
 
-            for (const win of windows) {
+            windows.forEach((win, idx) => {
                 const targetWindow = win;
                 const item = new PopupMenu.PopupMenuItem(shorten(targetWindow.get_title() || app.get_name()), { activate: false });
                 item._targetWindow = targetWindow;
                 item.label.add_style_class_name('aura-dock-window-title');
                 item.setSensitive(true);
+                item.actor._targetWindow = targetWindow;
 
                 // Show a live thumbnail of the window when possible.
                 try {
@@ -191,17 +192,33 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     if (clones && clones.length) {
                         const clone = clones[0].actor;
                         clone._targetWindow = targetWindow;
-                        clone.reactive = true;
-                        clone.set_style_class_name('aura-dock-thumb');
-                        clone.connect('button-release-event', (a, e) => {
+                        clone.reactive = false;
+
+                        const thumbBin = new St.Bin({
+                            style_class: 'aura-dock-thumb',
+                            width: 149,
+                            height: 120
+                        });
+                        thumbBin.set_child(clone);
+                        thumbBin.reactive = true;
+                        thumbBin._targetWindow = targetWindow;
+                        thumbBin._clickHandler = () => {
+                            const w = thumbBin._targetWindow;
+                            global._lastActivated = w ? w.get_title() : 'NO TARGET';
+                            if (w) {
+                                w.unminimize();
+                                w.activate(global.get_current_time());
+                            }
+                            this.close();
+                        };
+                        thumbBin.connect('button-release-event', (a, e) => {
                             if (e.get_button() === 1) {
-                                icon.controller.activateWindow(a._targetWindow);
-                                this.close();
+                                thumbBin._clickHandler();
                                 return Clutter.EVENT_STOP;
                             }
                             return Clutter.EVENT_PROPAGATE;
                         });
-                        item.addActor(clone, { span: 0, position: 0 });
+                        item.addActor(thumbBin, { span: 0, position: 0 });
                     }
                 } catch (e) {
                     // Window not yet composited (e.g. just created); skip thumbnail.
@@ -209,7 +226,12 @@ var AppMenu = class AppMenu extends DockPopupMenu {
 
                 item.actor.connect('button-release-event', (actor, e) => {
                     if (e.get_button() === 1) {
-                        icon.controller.activateWindow(item._targetWindow);
+                        const w = actor._targetWindow;
+                        global._lastActivated = w ? w.get_title() : 'NO WIN';
+                        if (w) {
+                            w.unminimize();
+                            w.activate(global.get_current_time());
+                        }
                         this.close();
                         return Clutter.EVENT_STOP;
                     }
@@ -221,13 +243,13 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 12 })
                 });
                 close.connect('clicked', () => {
-                    item._targetWindow.delete(global.get_current_time());
+                    item.actor._targetWindow.delete(global.get_current_time());
                     this.close();
                 });
                 item.addActor(close, { span: 0 });
 
                 this.addMenuItem(item);
-            }
+            });
         }
 
         addSeparator(this);
