@@ -5,6 +5,7 @@ const St = imports.gi.St;
 
 const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
+const Main = imports.ui.main;
 const Tooltips = imports.ui.tooltips;
 
 const Me = Extension.getCurrentExtension();
@@ -222,11 +223,12 @@ var AppIcon = class AppIcon {
                     return;
 
                 tooltip._tooltip.show();
-                let box = tooltip._tooltip.get_allocation_box();
-                let tooltipWidth = box.x2 - box.x1;
-                let tooltipHeight = box.y2 - box.y1;
+                let [minW, minH, prefW, prefH] = tooltip._tooltip.get_preferred_size();
+                let tooltipWidth = prefW;
+                let tooltipHeight = prefH;
                 if (tooltipWidth <= 0) tooltipWidth = tooltip._tooltip.width || 100;
                 if (tooltipHeight <= 0) tooltipHeight = tooltip._tooltip.height || 20;
+                tooltip._tooltip.set_size(tooltipWidth, tooltipHeight);
 
                 let monitor = Main.layoutManager.findMonitorForActor(icon);
                 let iconPos = icon.get_transformed_position();
