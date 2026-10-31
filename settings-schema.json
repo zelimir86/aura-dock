@@ -85,7 +85,8 @@
         "tooltip": "What a left click does on an application that already has windows.",
         "options": {
             "Minimize / focus": "minimize",
-            "Cycle through windows": "cycle"
+            "Cycle through windows": "cycle",
+            "Show window previews": "preview"
         }
     },
     "middle-click-action": {

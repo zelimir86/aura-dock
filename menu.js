@@ -7,6 +7,7 @@ const GLib = imports.gi.GLib;
 const AppFavorites = imports.ui.appFavorites;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
+const WindowUtils = imports.misc.windowUtils;
 
 const ICON_SIZES = [32, 40, 48, 56, 64, 72, 80, 96];
 const MAX_TITLE = 48;
@@ -181,6 +182,18 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                 const item = new PopupMenu.PopupMenuItem(shorten(win.get_title() || app.get_name()));
                 item.label.add_style_class_name('aura-dock-window-title');
 
+                // Show a live thumbnail of the window when possible.
+                try {
+                    const clones = WindowUtils.createWindowClone(win, 160, 120, false, false);
+                    if (clones && clones.length) {
+                        const clone = clones[0].actor;
+                        clone.set_style_class_name('aura-dock-thumb');
+                        item.addActor(clone, { span: 0, position: 0 });
+                    }
+                } catch (e) {
+                    // Window not yet composited (e.g. just created); skip thumbnail.
+                }
+
                 item.connect('activate', () => {
                     icon.controller.activateWindow(win);
                     this.close();
@@ -286,7 +299,8 @@ var DockMenu = class DockMenu extends DockPopupMenu {
 
         this.addChoice('Click action', 'click-action', () => this.controller.clickAction, [
             ['minimize', 'Minimize / focus'],
-            ['cycle', 'Cycle through windows']
+            ['cycle', 'Cycle through windows'],
+            ['preview', 'Show window previews']
         ]);
 
         addSeparator(this);

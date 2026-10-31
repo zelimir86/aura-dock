@@ -84,3 +84,9 @@
 .aura-dock-drop-placeholder StIcon {
     color: rgba(255, 255, 255, 0.7);
 }
+
+.aura-dock-thumb {
+    border-radius: 6px;
+    margin-right: 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+}

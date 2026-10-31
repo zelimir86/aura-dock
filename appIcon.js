@@ -305,7 +305,9 @@ var AppIcon = class AppIcon {
 
         if (windows.length > 1 && this.controller.clickAction === 'cycle')
             this.controller.cycleWindows(this, 1);
-        else
+        else if (windows.length > 0 && this.controller.clickAction === 'preview')
+            this._ensureMenu().toggle();
+        else if (windows.length > 0)
             windows.forEach(w => { if (!w.minimized) w.minimize(); });
     }
 
