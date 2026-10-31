@@ -65,11 +65,12 @@
 
 .aura-dock-close {
     border-radius: 6px;
-    padding: 2px;
+    padding: 4px;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .aura-dock-close:hover {
-    background-color: rgba(255, 255, 255, 0.18);
+    background-color: rgba(255, 80, 80, 0.8);
 }
 
 /* Drop placeholder shown while dragging an application onto the dock. */
