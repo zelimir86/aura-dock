@@ -363,7 +363,29 @@ var AppIcon = class AppIcon {
             this.app.open_new_window(-1);
         } catch (e) {
             logError(e, `Aura Dock: could not launch ${this.id}`);
+            return;
         }
+
+        // Bounce animation to acknowledge the launch.
+        if (!this.controller.animateHover)
+            return;
+
+        this._iconBin.set_pivot_point(0.5, 0.5);
+        const baseScale = this._hovered ? HOVER_SCALE : 1.0;
+        this._iconBin.ease({
+            scale_x: 1.35,
+            scale_y: 1.35,
+            duration: 120,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._iconBin.ease({
+                    scale_x: baseScale,
+                    scale_y: baseScale,
+                    duration: 180,
+                    mode: Clutter.AnimationMode.EASE_IN_QUAD
+                });
+            }
+        });
     }
 
     _preferredWindow() {
