@@ -237,18 +237,18 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 18 }),
                     reactive: true
                 });
-                close.set_style('min-width: 34px; min-height: 34px; padding: 6px; border-radius: 99px; background-color: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15);');
+                close.set_style('min-width: 28px; min-height: 28px; padding: 4px; border-radius: 99px; background-color: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15);');
                 close.connect('notify::hover', () => {
                     if (close.hover)
-                        close.set_style('min-width: 34px; min-height: 34px; padding: 6px; border-radius: 99px; background-color: rgba(255,80,80,0.9); border: 1px solid rgba(255,255,255,0.15);');
+                        close.set_style('min-width: 28px; min-height: 28px; padding: 4px; border-radius: 99px; background-color: rgba(255,80,80,0.9); border: 1px solid rgba(255,255,255,0.15);');
                     else
-                        close.set_style('min-width: 34px; min-height: 34px; padding: 6px; border-radius: 99px; background-color: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15);');
+                        close.set_style('min-width: 28px; min-height: 28px; padding: 4px; border-radius: 99px; background-color: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15);');
                 });
                 close.connect('clicked', () => {
                     targetWindow.delete(global.get_current_time());
                     this.close();
                 });
-                item.addActor(close, { span: 0 });
+                item.addActor(close, { span: 0, position: 1 });
 
                 this.addMenuItem(item);
             });
