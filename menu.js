@@ -179,15 +179,25 @@ var AppMenu = class AppMenu extends DockPopupMenu {
             addSeparator(this);
 
             for (const win of windows) {
-                const item = new PopupMenu.PopupMenuItem(shorten(win.get_title() || app.get_name()));
+                const targetWindow = win;
+                const item = new PopupMenu.PopupMenuItem(shorten(targetWindow.get_title() || app.get_name()));
                 item.label.add_style_class_name('aura-dock-window-title');
 
                 // Show a live thumbnail of the window when possible.
                 try {
-                    const clones = WindowUtils.createWindowClone(win, 160, 120, false, false);
+                    const clones = WindowUtils.createWindowClone(targetWindow, 160, 120, false, false);
                     if (clones && clones.length) {
                         const clone = clones[0].actor;
+                        clone.reactive = true;
                         clone.set_style_class_name('aura-dock-thumb');
+                        clone.connect('button-release-event', (a, e) => {
+                            if (e.get_button() === 1) {
+                                icon.controller.activateWindow(targetWindow);
+                                this.close();
+                                return Clutter.EVENT_STOP;
+                            }
+                            return Clutter.EVENT_PROPAGATE;
+                        });
                         item.addActor(clone, { span: 0, position: 0 });
                     }
                 } catch (e) {
@@ -195,7 +205,7 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                 }
 
                 item.connect('activate', () => {
-                    icon.controller.activateWindow(win);
+                    icon.controller.activateWindow(targetWindow);
                     this.close();
                 });
 
@@ -204,7 +214,7 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 12 })
                 });
                 close.connect('clicked', () => {
-                    win.delete(global.get_current_time());
+                    targetWindow.delete(global.get_current_time());
                     this.close();
                 });
                 item.addActor(close, { span: 0 });
