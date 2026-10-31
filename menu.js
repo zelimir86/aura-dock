@@ -180,9 +180,10 @@ var AppMenu = class AppMenu extends DockPopupMenu {
 
             for (const win of windows) {
                 const targetWindow = win;
-                const item = new PopupMenu.PopupMenuItem(shorten(targetWindow.get_title() || app.get_name()));
+                const item = new PopupMenu.PopupMenuItem(shorten(targetWindow.get_title() || app.get_name()), { activate: false });
                 item._targetWindow = targetWindow;
                 item.label.add_style_class_name('aura-dock-window-title');
+                item.setSensitive(true);
 
                 // Show a live thumbnail of the window when possible.
                 try {
@@ -190,18 +191,29 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     if (clones && clones.length) {
                         const clone = clones[0].actor;
                         clone._targetWindow = targetWindow;
-                        clone.reactive = false;
+                        clone.reactive = true;
                         clone.set_style_class_name('aura-dock-thumb');
+                        clone.connect('button-release-event', (a, e) => {
+                            if (e.get_button() === 1) {
+                                icon.controller.activateWindow(a._targetWindow);
+                                this.close();
+                                return Clutter.EVENT_STOP;
+                            }
+                            return Clutter.EVENT_PROPAGATE;
+                        });
                         item.addActor(clone, { span: 0, position: 0 });
                     }
                 } catch (e) {
                     // Window not yet composited (e.g. just created); skip thumbnail.
                 }
 
-                item.connect('activate', (activatedItem) => {
-                    const win = (activatedItem && activatedItem._targetWindow) || targetWindow;
-                    icon.controller.activateWindow(win);
-                    this.close();
+                item.actor.connect('button-release-event', (actor, e) => {
+                    if (e.get_button() === 1) {
+                        icon.controller.activateWindow(item._targetWindow);
+                        this.close();
+                        return Clutter.EVENT_STOP;
+                    }
+                    return Clutter.EVENT_PROPAGATE;
                 });
 
                 const close = new St.Button({
