@@ -181,6 +181,7 @@ var AppMenu = class AppMenu extends DockPopupMenu {
             for (const win of windows) {
                 const targetWindow = win;
                 const item = new PopupMenu.PopupMenuItem(shorten(targetWindow.get_title() || app.get_name()));
+                item._targetWindow = targetWindow;
                 item.label.add_style_class_name('aura-dock-window-title');
 
                 // Show a live thumbnail of the window when possible.
@@ -188,11 +189,12 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     const clones = WindowUtils.createWindowClone(targetWindow, 160, 120, false, false);
                     if (clones && clones.length) {
                         const clone = clones[0].actor;
+                        clone._targetWindow = targetWindow;
                         clone.reactive = true;
                         clone.set_style_class_name('aura-dock-thumb');
                         clone.connect('button-release-event', (a, e) => {
                             if (e.get_button() === 1) {
-                                icon.controller.activateWindow(targetWindow);
+                                icon.controller.activateWindow(a._targetWindow);
                                 this.close();
                                 return Clutter.EVENT_STOP;
                             }
@@ -205,7 +207,7 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                 }
 
                 item.connect('activate', () => {
-                    icon.controller.activateWindow(targetWindow);
+                    icon.controller.activateWindow(item._targetWindow);
                     this.close();
                 });
 
@@ -214,7 +216,7 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                     child: new St.Icon({ icon_name: 'window-close-symbolic', icon_size: 12 })
                 });
                 close.connect('clicked', () => {
-                    targetWindow.delete(global.get_current_time());
+                    item._targetWindow.delete(global.get_current_time());
                     this.close();
                 });
                 item.addActor(close, { span: 0 });
