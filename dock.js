@@ -1064,6 +1064,13 @@ var DockController = class DockController {
             if (win.get_monitor() !== this._monitorIndex)
                 continue;
 
+            // Only windows on the current workspace can overlap the dock;
+            // windows on other workspaces are out of sight.
+            const activeWs = global.workspace_manager.get_active_workspace();
+            const winWs = win.get_workspace();
+            if (winWs && activeWs && winWs !== activeWs)
+                continue;
+
             const [x, y] = actor.get_transformed_position();
             const [width, height] = actor.get_transformed_size();
 
