@@ -210,10 +210,50 @@ var AppIcon = class AppIcon {
         }
 
         const name = this.app.get_name();
-        if (!this._tooltip)
+        if (!this._tooltip) {
             this._tooltip = new Tooltips.Tooltip(this.actor, name);
-        else
+            // Override show() to anchor the tooltip to the icon instead of the
+            // mouse cursor, so it never runs off the screen edge.
+            const tooltip = this._tooltip;
+            const icon = this.actor;
+            const controller = this.controller;
+            tooltip.show = function() {
+                if (tooltip._tooltip.get_text() == "" || !tooltip.mousePosition)
+                    return;
+
+                tooltip._tooltip.show();
+                let box = tooltip._tooltip.get_allocation_box();
+                let tooltipWidth = box.x2 - box.x1;
+                let tooltipHeight = box.y2 - box.y1;
+                if (tooltipWidth <= 0) tooltipWidth = tooltip._tooltip.width || 100;
+                if (tooltipHeight <= 0) tooltipHeight = tooltip._tooltip.height || 20;
+
+                let monitor = Main.layoutManager.findMonitorForActor(icon);
+                let iconPos = icon.get_transformed_position();
+                let iconW = icon.width;
+                let iconH = icon.height;
+
+                let tooltipLeft = iconPos[0] + (iconW - tooltipWidth) / 2;
+                let tooltipTop;
+                if (controller.position === 'top')
+                    tooltipTop = iconPos[1] + iconH + 6;
+                else
+                    tooltipTop = iconPos[1] - tooltipHeight - 6;
+
+                tooltipLeft = Math.max(tooltipLeft, monitor.x + 4);
+                tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth - 4);
+                if (tooltipTop < monitor.y + 4)
+                    tooltipTop = monitor.y + 4;
+                if (tooltipTop + tooltipHeight > monitor.y + monitor.height - 4)
+                    tooltipTop = monitor.y + monitor.height - tooltipHeight - 4;
+
+                tooltip._tooltip.set_position(tooltipLeft, tooltipTop);
+                tooltip._tooltip.raise_top();
+                tooltip.visible = true;
+            };
+        } else {
             this._tooltip.set_text(name);
+        }
     }
 
     _destroyTooltip() {
@@ -296,6 +336,13 @@ var AppIcon = class AppIcon {
             return;
         }
 
+        // Preview mode: show thumbnails instead of activating/minimizing,
+        // but only when there is more than one window to choose from.
+        if (this.controller.clickAction === 'preview' && windows.length > 1) {
+            this._ensureMenu().toggle();
+            return;
+        }
+
         const focused = windows.find(w => w.appears_focused);
 
         if (!focused) {
@@ -305,9 +352,7 @@ var AppIcon = class AppIcon {
 
         if (windows.length > 1 && this.controller.clickAction === 'cycle')
             this.controller.cycleWindows(this, 1);
-        else if (windows.length > 0 && this.controller.clickAction === 'preview')
-            this._ensureMenu().toggle();
-        else if (windows.length > 0)
+        else
             windows.forEach(w => { if (!w.minimized) w.minimize(); });
     }
 

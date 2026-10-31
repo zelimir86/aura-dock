@@ -324,7 +324,6 @@ var DockController = class DockController {
         });
 
         this._dock.connect('enter-event', () => {
-            global.log('Aura Dock: dock enter');
             this._hover = true;
             this._cancelHide();
             this._show(true);
