@@ -112,6 +112,14 @@ dbus-send --session --print-reply --dest=org.Cinnamon /org/Cinnamon \
 - Hover-reveal cannot be exercised without a real pointer on Wayland; the
   autohide state machine is otherwise covered by the settings.
 
+## Acknowledgements
+
+This extension was designed and implemented with the assistance of **Claude**
+(Anthropic's AI assistant, running as the coding agent in OpenCode). All code,
+documentation and the iterative debugging (live Wayland testing, menu layout
+fixes, autohide edge cases, multi-monitor hotplug, etc.) were produced
+collaboratively between the maintainer and the AI agent.
+
 ## License
 
 MIT.
