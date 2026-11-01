@@ -12,7 +12,8 @@ react to window changes directly).
 ## Features
 
 - Pinned **favorites** (shared with the Cinnamon panel/menu favourites).
-- Running-application indicators (dots, one per window, up to 4).
+- Running-application indicators (segmented line under the icon, one segment
+  per window, up to 4).
 - Left-click activates/focuses/minimizes; middle-click opens a new window.
 - Right-click an icon for window list, New window, pin/unpin, Close all.
 - Right-click the dock for a quick settings menu (position, icon size,
@@ -91,7 +92,8 @@ The full schema lives in `settings-schema.json`:
 ## Theming
 
 Visuals are driven by `stylesheet.css` (`.aura-dock`, `.aura-dock-icon`,
-`.aura-dock-dot`, `.aura-dock-trigger`, `.aura-dock-menu`). Edit the file in
+`.aura-dock-indicator`, `.aura-dock-indicator-segment`, `.aura-dock-trigger`,
+`.aura-dock-menu`). Edit the file in
 the installed extension directory and reload with `./install.sh --reload`.
 
 ## Debugging
