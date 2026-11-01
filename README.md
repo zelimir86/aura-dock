@@ -116,11 +116,11 @@ dbus-send --session --print-reply --dest=org.Cinnamon /org/Cinnamon \
 
 ## Acknowledgements
 
-This extension was designed and implemented with the assistance of **Claude**
-(Anthropic's AI assistant, running as the coding agent in OpenCode). All code,
-documentation and the iterative debugging (live Wayland testing, menu layout
-fixes, autohide edge cases, multi-monitor hotplug, etc.) were produced
-collaboratively between the maintainer and the AI agent.
+This extension was designed and implemented with the assistance of an **AI
+coding agent** (Beam, running inside OpenCode). All code, documentation and the
+iterative debugging (live Wayland testing, menu layout fixes, autohide edge
+cases, multi-monitor hotplug, etc.) were produced collaboratively between the
+maintainer and the AI agent.
 
 ## License
 
