@@ -203,7 +203,6 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                         thumbBin.connect('button-release-event', (a, e) => {
                             if (e.get_button() === 1) {
                                 const w = a._targetWindow;
-                                global._lastActivated = w ? w.get_title() : 'NO TARGET';
                                 if (w) {
                                     w.unminimize();
                                     w.activate(global.get_current_time());
@@ -221,7 +220,6 @@ var AppMenu = class AppMenu extends DockPopupMenu {
                 item.actor.connect('button-release-event', (actor, e) => {
                     if (e.get_button() === 1) {
                         const w = actor._targetWindow;
-                        global._lastActivated = w ? w.get_title() : 'NO WIN';
                         if (w) {
                             w.unminimize();
                             w.activate(global.get_current_time());
